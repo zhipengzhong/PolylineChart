@@ -18,6 +18,9 @@ public class MainActivity extends AppCompatActivity {
     private PolylineView mPolylineView;
     private SeekBar mSeekBar;
     private TextView mCallBack;
+    private SeekBar mDense;
+    private int mNum = 10;
+    private int mDenseNum = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +37,28 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 Log.d(TAG, "onProgressChanged: " + progress);
-                generateData(progress * 10 + 2);
+                mNum = progress * 10 + 2;
+                generateData(mNum, mDenseNum);
+                //调整产生假数据的数量
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+
+        mDense.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                //调整产生假数据的间隔
+                mDenseNum = progress * 4 + 1;
+                generateData(mNum, mDenseNum);
             }
 
             @Override
@@ -57,14 +81,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initData() {
-        generateData(30);
+        generateData(mNum, mDenseNum);
     }
 
-    private void generateData(int num) {
+    private void generateData(int num, int dense) {
         ArrayList<Integer> list = new ArrayList<>();
         Random random = new Random();
         for (int i = 0; i < num; i++) {
-            list.add(random.nextInt(40) + 40);
+            list.add(random.nextInt(dense) + 400);
         }
         mPolylineView.setData(list);
     }
@@ -72,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
     private void initView() {
         mPolylineView = (PolylineView) findViewById(R.id.canvas_view);
         mSeekBar = (SeekBar) findViewById(R.id.seekBar);
+        mDense = (SeekBar) findViewById(R.id.seek_bar);
         mCallBack = (TextView) findViewById(R.id.call_back);
     }
 }

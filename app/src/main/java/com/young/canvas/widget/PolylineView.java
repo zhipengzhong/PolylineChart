@@ -29,11 +29,11 @@ public class PolylineView extends View {
     private Paint mCirclePaint;
     private ArrayList<Integer> mDatas;
     private Paint mDashPaint;
-    private int mRow = 2;
+    private int mRow = 8;
     private int mColumn = 3;
     private Paint mBorderPaint;
-    private float mMax = 100F;
-    private float mMini = 20F;
+    private float mMax = 1000F;
+    private float mMini = 100F;
     private Paint mTextPaint;
     private float mTextPadding = 6F;
     private int mBorderPaintWidth;
@@ -45,6 +45,8 @@ public class PolylineView extends View {
     private float mSelectedLineY;
     private OnSelectedDotListener mOnSelectedDotListener;
     private int mSelectedLineNum;
+    private float mSingle;
+    private Paint mShadowPaint;
 
     public PolylineView(Context context) {
         this(context, null);
@@ -91,6 +93,10 @@ public class PolylineView extends View {
         mSelectedLinePaint.setAntiAlias(true);
         mSelectedLinePaint.setColor(Color.RED);
         mSelectedLinePaint.setStrokeWidth(1);
+
+        mShadowPaint = new Paint();
+        mShadowPaint.setAntiAlias(true);
+        mShadowPaint.setColor(0x55FF0000);
 
     }
 
@@ -152,12 +158,37 @@ public class PolylineView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        initDraw();
+        drawShadow(canvas);
         drawPolyline(canvas);
         drawDot(canvas);
         drawDashed(canvas);
         drawBorder(canvas);
         drawText(canvas);
         drawSelectedLine(canvas);
+    }
+
+    private void drawShadow(Canvas canvas) {
+        if (mDatas != null) {
+            mPath = new Path();
+            float max = Collections.max(mDatas);
+            int size = mDatas.size();
+            mPath.moveTo(0, getMeasuredHeight());
+            for (int i = 0; i < size; i++) {
+                float x = getMeasuredWidth() * i / (size - 1);
+                float y = (Math.abs(mDatas.get(i) * mSingle - (max * mSingle)) + ((mMax - max) * mSingle));
+                mPath.lineTo(x, y);
+//                canvas.drawCircle(x, y, 4, mCirclePaint);
+            }
+            mPath.lineTo(getMeasuredWidth(), getMeasuredHeight());
+            canvas.drawPath(mPath, mShadowPaint);
+        }
+    }
+
+    private void initDraw() {
+        mDrawPolylineWidth = getMeasuredWidth() - (mBorderPaintWidth * 2);
+        mDrawPolylineHeaght = getMeasuredHeight() - (mBorderPaintWidth * 2);
+        mSingle = mDrawPolylineHeaght / (mMax - mMini);
     }
 
     private void drawSelectedLine(Canvas canvas) {
@@ -191,18 +222,13 @@ public class PolylineView extends View {
     }
 
     private void drawPolyline(Canvas canvas) {
-        mDrawPolylineWidth = getMeasuredWidth() - (mBorderPaintWidth * 2);
-        mDrawPolylineHeaght = getMeasuredHeight() - (mBorderPaintWidth * 2);
-        float single = mDrawPolylineHeaght / (mMax - mMini);
-
         if (mDatas != null) {
             mPath = new Path();
-            Random random = new Random();
             float max = Collections.max(mDatas);
             int size = mDatas.size();
             for (int i = 0; i < size; i++) {
                 float x = getMeasuredWidth() * i / (size - 1);
-                float y = (Math.abs(mDatas.get(i) * single - (max * single)) + ((mMax - max) * single));
+                float y = (Math.abs(mDatas.get(i) * mSingle - (max * mSingle)) + ((mMax - max) * mSingle));
                 if (i == 0) {
                     mPath.moveTo(0, y);
                 } else {
